@@ -13,6 +13,8 @@ body {
   font-family: sans-serif;
   background: #f3f3f3;
   color: #222;
+  overscroll-behavior: none;
+  touch-action: manipulation;
 }
 
 body {
@@ -22,6 +24,7 @@ body {
 .app {
   height: 100vh;
   width: 100%;
+  touch-action: manipulation;
 }
 
 /* =========================
@@ -35,6 +38,7 @@ body {
   background: #f3f3f3;
   z-index: 1000;
   padding: 8px 12px 0 12px;
+  touch-action: manipulation;
 }
 
 .fixed-top h1 {
@@ -177,6 +181,8 @@ input[type="number"] {
   height: 100vh;
   overflow: auto;
   padding: 150px 12px 12px 12px;
+  overscroll-behavior: none;
+  touch-action: pan-y;
 }
 
 .viewer {
@@ -205,18 +211,18 @@ input[type="number"] {
   flex: 0 0 auto;
 }
 
-/* PDFを表示するスクロール領域
-   縦横スクロールバーを出す */
+/* PDFを表示するスクロール領域 */
 .canvas-scroll {
   flex: 1 1 auto;
   overflow: auto;
   border: 1px solid #ddd;
   background: #fafafa;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  touch-action: pan-x pan-y;
 }
 
-/* 重要：
-   width:100% を付けない
-   描画サイズそのままで表示する */
+/* 描画サイズそのままで表示 */
 canvas {
   display: block;
   width: auto;
