@@ -15,13 +15,11 @@ const statusEl = document.getElementById("status");
 
 const leftPrevBtn = document.getElementById("leftPrevBtn");
 const leftNextBtn = document.getElementById("leftNextBtn");
-const leftGoBtn = document.getElementById("leftGoBtn");
 const leftPageInput = document.getElementById("leftPageInput");
 
 const rightControls = document.getElementById("rightControls");
 const rightPrevBtn = document.getElementById("rightPrevBtn");
 const rightNextBtn = document.getElementById("rightNextBtn");
-const rightGoBtn = document.getElementById("rightGoBtn");
 const rightPageInput = document.getElementById("rightPageInput");
 
 const leftZoomOutBtn = document.getElementById("leftZoomOutBtn");
@@ -39,18 +37,10 @@ const rightTitle = document.getElementById("rightTitle");
 const fixedTop = document.querySelector(".fixed-top");
 const viewerWrap = document.querySelector(".viewer-wrap");
 
-/* canvas を包むスクロール領域 */
-const leftScrollArea = leftCanvas.parentElement;
-const rightScrollArea = rightCanvas.parentElement;
-
 /* =========================
    状態
    ========================= */
 let pdfDoc = null;
-
-/* 初期は分割OFF
-   2画面表示は常に行う
-   OFF時は右操作のみ隠す */
 let splitMode = false;
 
 let leftPageNum = 1;
@@ -72,11 +62,18 @@ splitBtn.addEventListener("click", toggleSplitMode);
 
 leftPrevBtn.addEventListener("click", () => moveLeftPage(-1));
 leftNextBtn.addEventListener("click", () => moveLeftPage(1));
-leftGoBtn.addEventListener("click", goLeftPage);
-
 rightPrevBtn.addEventListener("click", () => moveRightPage(-1));
 rightNextBtn.addEventListener("click", () => moveRightPage(1));
-rightGoBtn.addEventListener("click", goRightPage);
+
+/* 表示ボタンは使わず、入力確定で反映 */
+leftPageInput.addEventListener("change", goLeftPage);
+rightPageInput.addEventListener("change", goRightPage);
+leftPageInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") goLeftPage();
+});
+rightPageInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") goRightPage();
+});
 
 leftZoomOutBtn.addEventListener("click", () => changeLeftZoom(-ZOOM_STEP));
 leftZoomInBtn.addEventListener("click", () => changeLeftZoom(ZOOM_STEP));
@@ -117,7 +114,6 @@ async function handleFileSelect(e) {
     leftPageNum = 1;
     rightPageNum = Math.min(2, pdfDoc.numPages);
 
-    /* 読み込み時は倍率を初期化 */
     leftZoom = 1.0;
     rightZoom = 1.0;
     updateZoomLabels();
@@ -200,7 +196,6 @@ function moveLeftPage(step) {
   leftPageNum = clampPage(leftPageNum + step);
   leftPageInput.value = leftPageNum;
 
-  /* 分割OFF時は右を左+1に連動 */
   if (!splitMode) {
     rightPageNum = clampPage(leftPageNum + 1);
     rightPageInput.value = rightPageNum;
@@ -250,7 +245,6 @@ async function renderAll() {
     return;
   }
 
-  /* 分割OFF時は右を左+1に連動 */
   if (!splitMode) {
     rightPageNum = clampPage(leftPageNum + 1);
     rightPageInput.value = rightPageNum;
@@ -270,9 +264,6 @@ async function renderAll() {
 
 async function renderPage(pageNum, canvas, titleEl, label, zoomFactor) {
   const page = await pdfDoc.getPage(pageNum);
-
-  /* 基本倍率は固定1。ズーム倍率をそのまま使う
-     これで拡大縮小が見た目に反映される */
   const viewport = page.getViewport({ scale: zoomFactor });
   const context = canvas.getContext("2d");
 
@@ -281,14 +272,54 @@ async function renderPage(pageNum, canvas, titleEl, label, zoomFactor) {
 
   await page.render({
     canvasContext: context,
-    viewport: viewport
+    viewport
   }).promise;
 
   titleEl.textContent = `${label}：${pageNum} ページ`;
 
-  /* スクロール位置はページ描画直後に先頭へ戻す
-     スクロールバーでページ移動はしない仕様 */
+  /* ページ切り替え時はスクロール位置を先頭に戻す */
   const scrollArea = canvas.parentElement;
   scrollArea.scrollTop = 0;
   scrollArea.scrollLeft = 0;
 }
+
+/* =========================
+   スマホ・タブレットでの
+   ページ全体ジェスチャー抑制
+   ========================= */
+
+/* 2本指でのページ全体ズーム抑制 */
+document.addEventListener(
+  "touchmove",
+  (e) => {
+    if (e.touches.length > 1) {
+      e.preventDefault();
+    }
+  },
+  { passive: false }
+);
+
+/* ダブルタップ拡大抑制 */
+let lastTouchEnd = 0;
+document.addEventListener(
+  "touchend",
+  (e) => {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+      e.preventDefault();
+    }
+    lastTouchEnd = now;
+  },
+  false
+);
+
+/* Safari系 gesture イベント対策 */
+document.addEventListener("gesturestart", (e) => {
+  e.preventDefault();
+});
+document.addEventListener("gesturechange", (e) => {
+  e.preventDefault();
+});
+document.addEventListener("gestureend", (e) => {
+  e.preventDefault();
+});
