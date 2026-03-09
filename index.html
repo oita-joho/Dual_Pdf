@@ -8,11 +8,11 @@
 </head>
 <body>
   <div class="app">
-    <!-- 固定ヘッダー領域 -->
+    <!-- 固定ヘッダー -->
     <header class="fixed-top">
       <h1>Dual PDF Viewer</h1>
 
-      <!-- 1行に並べる操作エリア -->
+      <!-- 横一列の操作バー -->
       <div class="toolbar-line">
         <!-- PDF選択 -->
         <label class="file-btn">
@@ -20,10 +20,10 @@
           <input type="file" id="pdfFile" accept="application/pdf" />
         </label>
 
-        <!-- 分割ボタン -->
+        <!-- 分割ON/OFF -->
         <button id="splitBtn" type="button" class="toggle-off">分割 OFF</button>
 
-        <!-- 左操作 -->
+        <!-- 左ページ操作 -->
         <div class="group" id="leftControls">
           <button id="leftPrevBtn" type="button">◀前へ</button>
           <span class="label">左ページ</span>
@@ -39,7 +39,7 @@
           </div>
         </div>
 
-        <!-- 右操作：分割ONのときだけ表示 -->
+        <!-- 右ページ操作：分割ONのときだけ表示 -->
         <div class="group hidden" id="rightControls">
           <button id="rightPrevBtn" type="button">◀前へ</button>
           <span class="label">右ページ</span>
@@ -68,12 +68,16 @@
       <div class="viewer" id="viewer">
         <section class="panel" id="leftPanel">
           <div class="panel-title" id="leftTitle">左ページ</div>
-          <canvas id="leftCanvas"></canvas>
+          <div class="canvas-scroll">
+            <canvas id="leftCanvas"></canvas>
+          </div>
         </section>
 
         <section class="panel" id="rightPanel">
           <div class="panel-title" id="rightTitle">右ページ</div>
-          <canvas id="rightCanvas"></canvas>
+          <div class="canvas-scroll">
+            <canvas id="rightCanvas"></canvas>
+          </div>
         </section>
       </div>
     </main>
