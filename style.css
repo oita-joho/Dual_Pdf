@@ -1,43 +1,80 @@
-/* 全要素の余白計算を安定させる　*/
+/* =========================
+   全体共通
+   ========================= */
 * {
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
+  padding: 0;
+  height: 100%;
   font-family: sans-serif;
-  background: #f5f5f5;
+  background: #f3f3f3;
   color: #222;
 }
 
+body {
+  overflow: hidden;
+}
+
 .app {
-  max-width: 1500px;
-  margin: 0 auto;
-  padding: 16px;
+  height: 100vh;
+  width: 100%;
 }
 
-h1 {
-  margin: 0 0 16px;
-  font-size: 28px;
+/* =========================
+   上部固定エリア
+   ========================= */
+.fixed-top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #f3f3f3;
+  z-index: 1000;
+  padding: 8px 12px 0 12px;
 }
 
-/* 上部操作エリア */
-.toolbar {
+.fixed-top h1 {
+  margin: 0 0 8px 8px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* ボタン類を1行に並べる */
+.toolbar-line {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  flex-wrap: nowrap;
   align-items: center;
-  margin-bottom: 12px;
+  gap: 8px;
+  padding: 0 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
-/* PDF選択をボタン風に見せる */
+/* 左右の操作グループ */
+.group {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* PDF選択をボタン風 */
 .file-btn {
-  display: inline-block;
-  padding: 10px 16px;
-  border: 1px solid #444;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 112px;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid #888;
   background: #fff;
   cursor: pointer;
   font-size: 18px;
+  white-space: nowrap;
 }
 
 .file-btn input {
@@ -46,52 +83,62 @@ h1 {
 
 /* 通常ボタン */
 button {
-  padding: 10px 14px;
-  font-size: 18px;
-  border: 1px solid #444;
+  min-width: 76px;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid #888;
   background: #fff;
   cursor: pointer;
+  font-size: 18px;
+  white-space: nowrap;
 }
 
 button:hover {
   background: #f0f0f0;
 }
 
-/* 分割ボタンのON/OFF見た目 */
+/* 分割ボタン状態 */
 .toggle-off {
   background: #fff;
 }
 
 .toggle-on {
-  background: #dff3ff;
-  border-color: #2a79b8;
+  background: #dceeff;
+  border-color: #4d88c7;
 }
 
-/* 操作行 */
-.control-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
+/* ラベル */
 .label {
   font-size: 18px;
+  white-space: nowrap;
 }
 
-.control-row input[type="number"] {
-  width: 90px;
-  padding: 8px;
+/* 数値入力 */
+input[type="number"] {
+  width: 72px;
+  height: 42px;
+  padding: 0 8px;
+  border: 1px solid #888;
   font-size: 18px;
-  border: 1px solid #666;
+  background: #fff;
 }
 
 /* 状態表示 */
 .status {
-  margin: 8px 0 14px;
+  margin: 2px 8px 0 8px;
+  padding: 4px 8px;
   font-size: 16px;
   color: #333;
+  background: #fff;
+  display: inline-block;
+}
+
+/* 赤線 */
+.divider {
+  margin-top: 2px;
+  height: 4px;
+  background: #e60000;
+  width: 100%;
 }
 
 /* 非表示 */
@@ -99,27 +146,44 @@ button:hover {
   display: none !important;
 }
 
-/* PDF表示エリアは常に2画面 */
+/* =========================
+   PDF表示領域
+   ========================= */
+
+/* 上部固定分だけ余白をあける
+   値はJSで実測して反映してもよいが、
+   今回は安定しやすいよう calc を使わず script 側でも補正する */
+.viewer-wrap {
+  height: 100vh;
+  overflow: auto;
+  padding: 150px 12px 12px 12px;
+}
+
+/* 常に2画面 */
 .viewer {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: 12px;
+  align-items: start;
 }
 
+/* 各PDF枠 */
 .panel {
   background: #fff;
-  border: 1px solid #ccc;
-  padding: 10px;
+  border: 1px solid #cfcfcf;
+  padding: 8px;
   min-height: 300px;
   overflow: auto;
 }
 
+/* タイトル */
 .panel-title {
+  margin-bottom: 8px;
   font-size: 18px;
   font-weight: bold;
-  margin-bottom: 8px;
 }
 
+/* PDF描画先 */
 canvas {
   display: block;
   width: 100%;
