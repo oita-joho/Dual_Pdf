@@ -39,6 +39,10 @@ const rightTitle = document.getElementById("rightTitle");
 const fixedTop = document.querySelector(".fixed-top");
 const viewerWrap = document.querySelector(".viewer-wrap");
 
+/* canvas を包むスクロール領域 */
+const leftScrollArea = leftCanvas.parentElement;
+const rightScrollArea = rightCanvas.parentElement;
+
 /* =========================
    状態
    ========================= */
@@ -52,8 +56,7 @@ let splitMode = false;
 let leftPageNum = 1;
 let rightPageNum = 2;
 
-/* 左右別の倍率
-   1.0 = 自動fit基準の100% */
+/* 左右独立ズーム */
 let leftZoom = 1.0;
 let rightZoom = 1.0;
 
@@ -75,7 +78,6 @@ rightPrevBtn.addEventListener("click", () => moveRightPage(-1));
 rightNextBtn.addEventListener("click", () => moveRightPage(1));
 rightGoBtn.addEventListener("click", goRightPage);
 
-/* 左右独立ズーム */
 leftZoomOutBtn.addEventListener("click", () => changeLeftZoom(-ZOOM_STEP));
 leftZoomInBtn.addEventListener("click", () => changeLeftZoom(ZOOM_STEP));
 rightZoomOutBtn.addEventListener("click", () => changeRightZoom(-ZOOM_STEP));
@@ -115,14 +117,13 @@ async function handleFileSelect(e) {
     leftPageNum = 1;
     rightPageNum = Math.min(2, pdfDoc.numPages);
 
-    /* 読み込み時は倍率を100%へ戻す */
+    /* 読み込み時は倍率を初期化 */
     leftZoom = 1.0;
     rightZoom = 1.0;
     updateZoomLabels();
 
     leftPageInput.max = pdfDoc.numPages;
     rightPageInput.max = pdfDoc.numPages;
-
     leftPageInput.value = leftPageNum;
     rightPageInput.value = rightPageNum;
 
@@ -199,6 +200,7 @@ function moveLeftPage(step) {
   leftPageNum = clampPage(leftPageNum + step);
   leftPageInput.value = leftPageNum;
 
+  /* 分割OFF時は右を左+1に連動 */
   if (!splitMode) {
     rightPageNum = clampPage(leftPageNum + 1);
     rightPageInput.value = rightPageNum;
@@ -248,6 +250,7 @@ async function renderAll() {
     return;
   }
 
+  /* 分割OFF時は右を左+1に連動 */
   if (!splitMode) {
     rightPageNum = clampPage(leftPageNum + 1);
     rightPageInput.value = rightPageNum;
@@ -268,17 +271,9 @@ async function renderAll() {
 async function renderPage(pageNum, canvas, titleEl, label, zoomFactor) {
   const page = await pdfDoc.getPage(pageNum);
 
-  /* 元サイズ */
-  const unscaledViewport = page.getViewport({ scale: 1 });
-
-  /* 画面幅に合わせた基本倍率 */
-  const containerWidth = Math.max(canvas.parentElement.clientWidth - 20, 100);
-  const baseScale = containerWidth / unscaledViewport.width;
-
-  /* 左右別の追加倍率をかける */
-  const finalScale = baseScale * zoomFactor;
-
-  const viewport = page.getViewport({ scale: finalScale });
+  /* 基本倍率は固定1。ズーム倍率をそのまま使う
+     これで拡大縮小が見た目に反映される */
+  const viewport = page.getViewport({ scale: zoomFactor });
   const context = canvas.getContext("2d");
 
   canvas.width = viewport.width;
@@ -290,4 +285,10 @@ async function renderPage(pageNum, canvas, titleEl, label, zoomFactor) {
   }).promise;
 
   titleEl.textContent = `${label}：${pageNum} ページ`;
+
+  /* スクロール位置はページ描画直後に先頭へ戻す
+     スクロールバーでページ移動はしない仕様 */
+  const scrollArea = canvas.parentElement;
+  scrollArea.scrollTop = 0;
+  scrollArea.scrollLeft = 0;
 }
