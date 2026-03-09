@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF 2画面ビューア</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>PDF 2画面ビューア</h1>
+
+    <div class="controls">
+      <label class="file-label">
+        PDFを選択
+        <input type="file" id="pdfFile" accept="application/pdf" />
+      </label>
+
+      <button id="prevBtn">◀ 前へ</button>
+
+      <label>
+        開始ページ
+        <input type="number" id="pageInput" min="1" value="1" />
+      </label>
+
+      <button id="goBtn">表示</button>
+      <button id="nextBtn">次へ ▶</button>
+    </div>
+
+    <div class="info">
+      <span id="status">PDFを選択してください</span>
+    </div>
+  </header>
+
+  <main class="viewer-wrap">
+    <section class="page-panel">
+      <div class="page-title" id="leftTitle">左ページ</div>
+      <canvas id="leftCanvas"></canvas>
+    </section>
+
+    <section class="page-panel">
+      <div class="page-title" id="rightTitle">右ページ</div>
+      <canvas id="rightCanvas"></canvas>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
+  <script type="module" src="script.js"></script>
+</body>
+</html>
