@@ -19,8 +19,8 @@
       </label>
 
       <!-- 分割ボタン
-           初期状態は OFF
-           ON のときだけ右操作行を表示する -->
+           初期は OFF
+           ON のときだけ右ページ操作を表示する -->
       <button id="splitBtn" type="button" class="toggle-off">分割 OFF</button>
     </div>
 
@@ -43,20 +43,18 @@
     </div>
 
     <!-- 状態表示 -->
-    <div class="viewer single" id="viewer">
+    <div class="status" id="status">
       PDFを選択してください
     </div>
 
-    <!-- PDF表示エリア
-         分割OFF: 左だけ広く表示
-         分割ON : 左右2画面表示 -->
-    <div class="viewer single" id="viewer">
+    <!-- 2画面表示は常に有効 -->
+    <div class="viewer" id="viewer">
       <div class="panel" id="leftPanel">
         <div class="panel-title" id="leftTitle">左ページ</div>
         <canvas id="leftCanvas"></canvas>
       </div>
 
-      <div class="panel hidden" id="rightPanel">
+      <div class="panel" id="rightPanel">
         <div class="panel-title" id="rightTitle">右ページ</div>
         <canvas id="rightCanvas"></canvas>
       </div>
