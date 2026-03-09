@@ -1,1 +1,105 @@
+* {
+  box-sizing: border-box;
+}
 
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #f3f4f6;
+  color: #222;
+}
+
+.topbar {
+  background: #1f2937;
+  color: #fff;
+  padding: 16px;
+}
+
+.topbar h1 {
+  margin: 0 0 12px 0;
+  font-size: 24px;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.controls button,
+.controls input[type="number"],
+.file-label {
+  font-size: 14px;
+}
+
+.controls button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.controls button:hover {
+  opacity: 0.9;
+}
+
+.controls input[type="number"] {
+  width: 80px;
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.file-label {
+  display: inline-block;
+  background: #2563eb;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.file-label input {
+  display: none;
+}
+
+.info {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.viewer-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 12px;
+}
+
+.page-panel {
+  background: white;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  min-height: 300px;
+  overflow: auto;
+}
+
+.page-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid #ddd;
+  background: #fff;
+}
+
+@media (max-width: 900px) {
+  .viewer-wrap {
+    grid-template-columns: 1fr;
+  }
+}
