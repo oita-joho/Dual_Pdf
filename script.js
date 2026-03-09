@@ -24,6 +24,13 @@ const rightNextBtn = document.getElementById("rightNextBtn");
 const rightGoBtn = document.getElementById("rightGoBtn");
 const rightPageInput = document.getElementById("rightPageInput");
 
+const leftZoomOutBtn = document.getElementById("leftZoomOutBtn");
+const leftZoomInBtn = document.getElementById("leftZoomInBtn");
+const rightZoomOutBtn = document.getElementById("rightZoomOutBtn");
+const rightZoomInBtn = document.getElementById("rightZoomInBtn");
+const leftZoomLabel = document.getElementById("leftZoomLabel");
+const rightZoomLabel = document.getElementById("rightZoomLabel");
+
 const leftCanvas = document.getElementById("leftCanvas");
 const rightCanvas = document.getElementById("rightCanvas");
 const leftTitle = document.getElementById("leftTitle");
@@ -45,6 +52,15 @@ let splitMode = false;
 let leftPageNum = 1;
 let rightPageNum = 2;
 
+/* 左右別の倍率
+   1.0 = 自動fit基準の100% */
+let leftZoom = 1.0;
+let rightZoom = 1.0;
+
+const ZOOM_STEP = 0.1;
+const ZOOM_MIN = 0.5;
+const ZOOM_MAX = 3.0;
+
 /* =========================
    イベント
    ========================= */
@@ -59,6 +75,12 @@ rightPrevBtn.addEventListener("click", () => moveRightPage(-1));
 rightNextBtn.addEventListener("click", () => moveRightPage(1));
 rightGoBtn.addEventListener("click", goRightPage);
 
+/* 左右独立ズーム */
+leftZoomOutBtn.addEventListener("click", () => changeLeftZoom(-ZOOM_STEP));
+leftZoomInBtn.addEventListener("click", () => changeLeftZoom(ZOOM_STEP));
+rightZoomOutBtn.addEventListener("click", () => changeRightZoom(-ZOOM_STEP));
+rightZoomInBtn.addEventListener("click", () => changeRightZoom(ZOOM_STEP));
+
 window.addEventListener("resize", async () => {
   adjustViewerTopPadding();
   if (pdfDoc) {
@@ -68,14 +90,12 @@ window.addEventListener("resize", async () => {
 
 /* 初期反映 */
 updateSplitUI();
+updateZoomLabels();
 adjustViewerTopPadding();
 
 /* =========================
    レイアウト補正
    ========================= */
-
-/* 固定ヘッダーの高さに合わせて
-   PDF領域の上余白を自動調整する */
 function adjustViewerTopPadding() {
   const h = fixedTop.offsetHeight;
   viewerWrap.style.paddingTop = `${h + 8}px`;
@@ -94,6 +114,11 @@ async function handleFileSelect(e) {
 
     leftPageNum = 1;
     rightPageNum = Math.min(2, pdfDoc.numPages);
+
+    /* 読み込み時は倍率を100%へ戻す */
+    leftZoom = 1.0;
+    rightZoom = 1.0;
+    updateZoomLabels();
 
     leftPageInput.max = pdfDoc.numPages;
     rightPageInput.max = pdfDoc.numPages;
@@ -120,7 +145,6 @@ function toggleSplitMode() {
   }
 }
 
-/* 右操作の表示切替 */
 function updateSplitUI() {
   if (splitMode) {
     rightControls.classList.remove("hidden");
@@ -138,6 +162,30 @@ function updateSplitUI() {
 }
 
 /* =========================
+   ズーム
+   ========================= */
+function clampZoom(value) {
+  return Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, value));
+}
+
+function updateZoomLabels() {
+  leftZoomLabel.textContent = `${Math.round(leftZoom * 100)}%`;
+  rightZoomLabel.textContent = `${Math.round(rightZoom * 100)}%`;
+}
+
+function changeLeftZoom(delta) {
+  leftZoom = clampZoom(leftZoom + delta);
+  updateZoomLabels();
+  if (pdfDoc) renderAll();
+}
+
+function changeRightZoom(delta) {
+  rightZoom = clampZoom(rightZoom + delta);
+  updateZoomLabels();
+  if (pdfDoc) renderAll();
+}
+
+/* =========================
    ページ操作
    ========================= */
 function clampPage(page) {
@@ -151,7 +199,6 @@ function moveLeftPage(step) {
   leftPageNum = clampPage(leftPageNum + step);
   leftPageInput.value = leftPageNum;
 
-  /* 分割OFF時は右を左+1に連動 */
   if (!splitMode) {
     rightPageNum = clampPage(leftPageNum + 1);
     rightPageInput.value = rightPageNum;
@@ -201,14 +248,13 @@ async function renderAll() {
     return;
   }
 
-  /* 分割OFF時は右を左+1に連動 */
   if (!splitMode) {
     rightPageNum = clampPage(leftPageNum + 1);
     rightPageInput.value = rightPageNum;
   }
 
-  await renderPage(leftPageNum, leftCanvas, leftTitle, "左ページ");
-  await renderPage(rightPageNum, rightCanvas, rightTitle, "右ページ");
+  await renderPage(leftPageNum, leftCanvas, leftTitle, "左ページ", leftZoom);
+  await renderPage(rightPageNum, rightCanvas, rightTitle, "右ページ", rightZoom);
 
   if (splitMode) {
     statusEl.textContent =
@@ -219,17 +265,20 @@ async function renderAll() {
   }
 }
 
-async function renderPage(pageNum, canvas, titleEl, label) {
+async function renderPage(pageNum, canvas, titleEl, label, zoomFactor) {
   const page = await pdfDoc.getPage(pageNum);
 
   /* 元サイズ */
   const unscaledViewport = page.getViewport({ scale: 1 });
 
-  /* パネル幅に合わせて縮尺調整 */
+  /* 画面幅に合わせた基本倍率 */
   const containerWidth = Math.max(canvas.parentElement.clientWidth - 20, 100);
-  const scale = containerWidth / unscaledViewport.width;
+  const baseScale = containerWidth / unscaledViewport.width;
 
-  const viewport = page.getViewport({ scale });
+  /* 左右別の追加倍率をかける */
+  const finalScale = baseScale * zoomFactor;
+
+  const viewport = page.getViewport({ scale: finalScale });
   const context = canvas.getContext("2d");
 
   canvas.width = viewport.width;
