@@ -11,9 +11,6 @@ const pdfFile = document.getElementById("pdfFile");
 const splitBtn = document.getElementById("splitBtn");
 const statusEl = document.getElementById("status");
 
-const viewer = document.getElementById("viewer");
-
-const leftControls = document.getElementById("leftControls");
 const rightControls = document.getElementById("rightControls");
 
 const leftPrevBtn = document.getElementById("leftPrevBtn");
@@ -26,9 +23,6 @@ const rightNextBtn = document.getElementById("rightNextBtn");
 const rightGoBtn = document.getElementById("rightGoBtn");
 const rightPageInput = document.getElementById("rightPageInput");
 
-const leftPanel = document.getElementById("leftPanel");
-const rightPanel = document.getElementById("rightPanel");
-
 const leftCanvas = document.getElementById("leftCanvas");
 const rightCanvas = document.getElementById("rightCanvas");
 
@@ -38,9 +32,13 @@ const rightTitle = document.getElementById("rightTitle");
 /* =========
    状態管理
    ========= */
+
+/* 読み込んだPDF本体 */
 let pdfDoc = null;
 
-/* 初期状態は分割OFF */
+/* 初期は分割OFF
+   ただし2画面表示自体は常に行う
+   OFFのときは右操作だけ隠す */
 let splitMode = false;
 
 /* 左右の現在ページ */
@@ -57,32 +55,30 @@ pdfFile.addEventListener("change", handleFileSelect);
 /* 分割ON/OFF */
 splitBtn.addEventListener("click", toggleSplitMode);
 
-/* 左操作 */
+/* 左側操作 */
 leftPrevBtn.addEventListener("click", () => moveLeftPage(-1));
 leftNextBtn.addEventListener("click", () => moveLeftPage(1));
 leftGoBtn.addEventListener("click", goLeftPage);
 
-/* 右操作 */
+/* 右側操作 */
 rightPrevBtn.addEventListener("click", () => moveRightPage(-1));
 rightNextBtn.addEventListener("click", () => moveRightPage(1));
 rightGoBtn.addEventListener("click", goRightPage);
 
-/* ウィンドウ幅変更時に再描画 */
+/* 画面幅が変わったとき、PDFを描き直す */
 window.addEventListener("resize", async () => {
   if (!pdfDoc) return;
   await renderAll();
 });
 
-/* =========
-   初期表示反映
-   ========= */
+/* 初期状態を反映 */
 updateSplitUI();
 
 /* =========
-   関数群
+   関数
    ========= */
 
-/* PDFを読み込む */
+/* PDFファイル読み込み */
 async function handleFileSelect(e) {
   const file = e.target.files?.[0];
   if (!file) return;
@@ -95,10 +91,11 @@ async function handleFileSelect(e) {
     leftPageNum = 1;
     rightPageNum = Math.min(2, pdfDoc.numPages);
 
-    /* 入力欄の最大値・初期値 */
+    /* 入力欄の最大ページ設定 */
     leftPageInput.max = pdfDoc.numPages;
     rightPageInput.max = pdfDoc.numPages;
 
+    /* 入力欄へ反映 */
     leftPageInput.value = leftPageNum;
     rightPageInput.value = rightPageNum;
 
@@ -109,68 +106,82 @@ async function handleFileSelect(e) {
   }
 }
 
-/* 分割ON/OFF切替 */
+/* 分割ボタン切替
+   ONのときだけ右操作を見せる */
 function toggleSplitMode() {
   splitMode = !splitMode;
   updateSplitUI();
 
-  /* PDF読み込み済みなら再描画 */
   if (pdfDoc) {
     renderAll();
   }
 }
 
-/* 分割状態に応じてUIを切り替える */
+/* 分割状態に応じて右操作の表示だけ切り替える */
 function updateSplitUI() {
   if (splitMode) {
-    /* 分割ON:
-       右操作行を表示 */
     rightControls.classList.remove("hidden");
-
     splitBtn.textContent = "分割 ON";
     splitBtn.classList.remove("toggle-off");
     splitBtn.classList.add("toggle-on");
   } else {
-    /* 分割OFF:
-       右操作行だけ非表示
-       右画面は消さない */
     rightControls.classList.add("hidden");
-
     splitBtn.textContent = "分割 OFF";
     splitBtn.classList.remove("toggle-on");
     splitBtn.classList.add("toggle-off");
   }
 }
 
-/* 左ページを移動 */
+/* 左ページを前後に動かす */
 function moveLeftPage(step) {
   if (!pdfDoc) return;
+
   leftPageNum = clampPage(leftPageNum + step);
   leftPageInput.value = leftPageNum;
+
+  /* 分割OFFのときは右ページを左+1に連動させる
+     分割ONのときは右ページは独立 */
+  if (!splitMode) {
+    rightPageNum = clampPage(leftPageNum + 1);
+    rightPageInput.value = rightPageNum;
+  }
+
   renderAll();
 }
 
-/* 右ページを移動 */
+/* 右ページを前後に動かす */
 function moveRightPage(step) {
   if (!pdfDoc) return;
+
   rightPageNum = clampPage(rightPageNum + step);
   rightPageInput.value = rightPageNum;
+
   renderAll();
 }
 
-/* 左ページへ移動（入力値反映） */
+/* 左ページ入力値を反映 */
 function goLeftPage() {
   if (!pdfDoc) return;
+
   leftPageNum = clampPage(parseInt(leftPageInput.value, 10) || 1);
   leftPageInput.value = leftPageNum;
+
+  /* 分割OFFのときは右ページを左+1に連動 */
+  if (!splitMode) {
+    rightPageNum = clampPage(leftPageNum + 1);
+    rightPageInput.value = rightPageNum;
+  }
+
   renderAll();
 }
 
-/* 右ページへ移動（入力値反映） */
+/* 右ページ入力値を反映 */
 function goRightPage() {
   if (!pdfDoc) return;
+
   rightPageNum = clampPage(parseInt(rightPageInput.value, 10) || 1);
   rightPageInput.value = rightPageNum;
+
   renderAll();
 }
 
@@ -180,26 +191,28 @@ function clampPage(page) {
   return Math.max(1, Math.min(pdfDoc.numPages, page));
 }
 
-/* 全体再描画 */
+/* 左右を再描画 */
 async function renderAll() {
   if (!pdfDoc) {
     statusEl.textContent = "PDFを選択してください";
     return;
   }
 
-  /* 左は常に描画 */
-  await renderPage(leftPageNum, leftCanvas, leftTitle, "左ページ");
+  /* 分割OFFのときは右ページを左+1にそろえる */
+  if (!splitMode) {
+    rightPageNum = clampPage(leftPageNum + 1);
+    rightPageInput.value = rightPageNum;
+  }
 
-  /* 分割ONのときだけ右を描画 */
+  await renderPage(leftPageNum, leftCanvas, leftTitle, "左ページ");
+  await renderPage(rightPageNum, rightCanvas, rightTitle, "右ページ");
+
   if (splitMode) {
-    await renderPage(rightPageNum, rightCanvas, rightTitle, "右ページ");
     statusEl.textContent =
-      `全 ${pdfDoc.numPages} ページ / 左 ${leftPageNum} ページ / 右 ${rightPageNum} ページ`;
+      `全 ${pdfDoc.numPages} ページ / 左 ${leftPageNum} ページ / 右 ${rightPageNum} ページ / 分割ON`;
   } else {
-    clearCanvas(rightCanvas);
-    rightTitle.textContent = "右ページ";
     statusEl.textContent =
-      `全 ${pdfDoc.numPages} ページ / 左 ${leftPageNum} ページ / 分割OFF`;
+      `全 ${pdfDoc.numPages} ページ / 左 ${leftPageNum} ページ / 右 ${rightPageNum} ページ / 分割OFF（右は左+1に連動）`;
   }
 }
 
@@ -207,10 +220,10 @@ async function renderAll() {
 async function renderPage(pageNum, canvas, titleEl, label) {
   const page = await pdfDoc.getPage(pageNum);
 
-  /* いったん倍率1でサイズ取得 */
+  /* 元サイズ取得 */
   const unscaledViewport = page.getViewport({ scale: 1 });
 
-  /* 親パネルの幅に合わせて縮尺を自動計算 */
+  /* パネル幅に合わせて拡大縮小 */
   const containerWidth = canvas.parentElement.clientWidth - 24;
   const scale = containerWidth / unscaledViewport.width;
 
@@ -226,12 +239,4 @@ async function renderPage(pageNum, canvas, titleEl, label) {
   }).promise;
 
   titleEl.textContent = `${label}：${pageNum} ページ`;
-}
-
-/* canvas を消す */
-function clearCanvas(canvas) {
-  const ctx = canvas.getContext("2d");
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  canvas.width = 0;
-  canvas.height = 0;
 }
