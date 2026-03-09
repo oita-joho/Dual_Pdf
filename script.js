@@ -124,28 +124,17 @@ function toggleSplitMode() {
 function updateSplitUI() {
   if (splitMode) {
     /* 分割ON:
-       右操作行を表示
-       右パネルを表示
-       2列表示 */
+       右操作行を表示 */
     rightControls.classList.remove("hidden");
-    rightPanel.classList.remove("hidden");
-
-    viewer.classList.remove("single");
-    viewer.classList.add("split");
 
     splitBtn.textContent = "分割 ON";
     splitBtn.classList.remove("toggle-off");
     splitBtn.classList.add("toggle-on");
   } else {
     /* 分割OFF:
-       右操作行を非表示
-       右パネルを非表示
-       左だけ1列表示 */
+       右操作行だけ非表示
+       右画面は消さない */
     rightControls.classList.add("hidden");
-    rightPanel.classList.add("hidden");
-
-    viewer.classList.remove("split");
-    viewer.classList.add("single");
 
     splitBtn.textContent = "分割 OFF";
     splitBtn.classList.remove("toggle-on");
