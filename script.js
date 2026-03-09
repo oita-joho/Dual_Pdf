@@ -263,21 +263,29 @@ async function renderAll() {
 }
 
 async function renderPage(pageNum, canvas, titleEl, label, zoomFactor) {
+
   const page = await pdfDoc.getPage(pageNum);
-  const viewport = page.getViewport({ scale: zoomFactor });
+
+  const containerWidth = canvas.parentElement.clientWidth;
+
+  const viewport = page.getViewport({ scale: 1 });
+
+  const scale = (containerWidth / viewport.width) * zoomFactor;
+
+  const scaledViewport = page.getViewport({ scale: scale });
+
   const context = canvas.getContext("2d");
 
-  canvas.width = viewport.width;
-  canvas.height = viewport.height;
+  canvas.width = scaledViewport.width;
+  canvas.height = scaledViewport.height;
 
   await page.render({
     canvasContext: context,
-    viewport
+    viewport: scaledViewport
   }).promise;
 
   titleEl.textContent = `${label}：${pageNum} ページ`;
 
-  /* ページ切り替え時はスクロール位置を先頭に戻す */
   const scrollArea = canvas.parentElement;
   scrollArea.scrollTop = 0;
   scrollArea.scrollLeft = 0;
