@@ -8,66 +8,67 @@
 </head>
 <body>
   <div class="app">
-    <h1>Dual PDF Viewer</h1>
+    <!-- 固定ヘッダー領域 -->
+    <header class="fixed-top">
+      <h1>Dual PDF Viewer</h1>
 
-    <!-- 上部操作エリア -->
-    <div class="toolbar">
-      <!-- PDF選択 -->
-      <label class="file-btn">
-        PDF を選択
-        <input type="file" id="pdfFile" accept="application/pdf" />
-      </label>
+      <!-- 1行に並べる操作エリア -->
+      <div class="toolbar-line">
+        <!-- PDF選択 -->
+        <label class="file-btn">
+          PDF を選択
+          <input type="file" id="pdfFile" accept="application/pdf" />
+        </label>
 
-      <!-- 分割ボタン
-           初期は OFF
-           ON のときだけ右ページ操作を表示する -->
-      <button id="splitBtn" type="button" class="toggle-off">分割 OFF</button>
-    </div>
+        <!-- 分割ボタン -->
+        <button id="splitBtn" type="button" class="toggle-off">分割 OFF</button>
 
-    <!-- 左ページ操作：常に表示 -->
-    <div class="control-row" id="leftControls">
-      <button id="leftPrevBtn" type="button">◀前へ</button>
-      <span class="label">左ページ</span>
-      <input id="leftPageInput" type="number" min="1" value="1" />
-      <button id="leftGoBtn" type="button">表示</button>
-      <button id="leftNextBtn" type="button">次へ▶</button>
-    </div>
+        <!-- 左操作 -->
+        <div class="group" id="leftControls">
+          <button id="leftPrevBtn" type="button">◀前へ</button>
+          <span class="label">左ページ</span>
+          <input id="leftPageInput" type="number" min="1" value="1" />
+          <button id="leftGoBtn" type="button">表示</button>
+          <button id="leftNextBtn" type="button">次へ▶</button>
+        </div>
 
-    <!-- 右ページ操作：分割ONのときだけ表示 -->
-    <div class="control-row hidden" id="rightControls">
-      <button id="rightPrevBtn" type="button">◀前へ</button>
-      <span class="label">右ページ</span>
-      <input id="rightPageInput" type="number" min="1" value="2" />
-      <button id="rightGoBtn" type="button">表示</button>
-      <button id="rightNextBtn" type="button">次へ▶</button>
-    </div>
-
-    <!-- 状態表示 -->
-    <div class="status" id="status">
-      PDFを選択してください
-    </div>
-
-    <!-- 2画面表示は常に有効 -->
-    <div class="viewer" id="viewer">
-      <div class="panel" id="leftPanel">
-        <div class="panel-title" id="leftTitle">左ページ</div>
-        <canvas id="leftCanvas"></canvas>
+        <!-- 右操作：分割ONのときだけ表示 -->
+        <div class="group hidden" id="rightControls">
+          <button id="rightPrevBtn" type="button">◀前へ</button>
+          <span class="label">右ページ</span>
+          <input id="rightPageInput" type="number" min="1" value="2" />
+          <button id="rightGoBtn" type="button">表示</button>
+          <button id="rightNextBtn" type="button">次へ▶</button>
+        </div>
       </div>
 
-      <div class="panel" id="rightPanel">
-        <div class="panel-title" id="rightTitle">右ページ</div>
-        <canvas id="rightCanvas"></canvas>
+      <!-- 状態表示 -->
+      <div class="status" id="status">PDFを選択してください</div>
+
+      <!-- 赤線 -->
+      <div class="divider"></div>
+    </header>
+
+    <!-- PDF表示領域 -->
+    <main class="viewer-wrap">
+      <div class="viewer" id="viewer">
+        <section class="panel" id="leftPanel">
+          <div class="panel-title" id="leftTitle">左ページ</div>
+          <canvas id="leftCanvas"></canvas>
+        </section>
+
+        <section class="panel" id="rightPanel">
+          <div class="panel-title" id="rightTitle">右ページ</div>
+          <canvas id="rightCanvas"></canvas>
+        </section>
       </div>
-    </div>
+    </main>
   </div>
 
-  <!-- PDF.js -->
   <script
     type="module"
     src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs">
   </script>
-
-  <!-- 自作JS -->
   <script type="module" src="script.js"></script>
 </body>
 </html>
