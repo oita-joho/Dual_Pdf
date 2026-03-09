@@ -1,4 +1,4 @@
-/* 全体共通 */
+/* 全要素の余白計算を安定させる */
 * {
   box-sizing: border-box;
 }
@@ -11,7 +11,7 @@ body {
 }
 
 .app {
-  max-width: 1400px;
+  max-width: 1500px;
   margin: 0 auto;
   padding: 16px;
 }
@@ -21,7 +21,7 @@ h1 {
   font-size: 28px;
 }
 
-/* 上部ボタン */
+/* 上部操作エリア */
 .toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -30,7 +30,7 @@ h1 {
   margin-bottom: 12px;
 }
 
-/* PDF選択ボタン風 */
+/* PDF選択をボタン風に見せる */
 .file-btn {
   display: inline-block;
   padding: 10px 16px;
@@ -57,7 +57,7 @@ button:hover {
   background: #f0f0f0;
 }
 
-/* 分割ボタン OFF / ON の見た目 */
+/* 分割ボタンのON/OFF見た目 */
 .toggle-off {
   background: #fff;
 }
@@ -67,7 +67,7 @@ button:hover {
   border-color: #2a79b8;
 }
 
-/* 左右ページ操作行 */
+/* 操作行 */
 .control-row {
   display: flex;
   flex-wrap: wrap;
@@ -81,7 +81,7 @@ button:hover {
 }
 
 .control-row input[type="number"] {
-  width: 80px;
+  width: 90px;
   padding: 8px;
   font-size: 18px;
   border: 1px solid #666;
@@ -94,25 +94,16 @@ button:hover {
   color: #333;
 }
 
-/* 非表示用 */
+/* 非表示 */
 .hidden {
   display: none !important;
 }
 
-/* PDF表示エリア */
+/* PDF表示エリアは常に2画面 */
 .viewer {
   display: grid;
-  gap: 14px;
-}
-
-/* 分割OFFのときは1列 */
-.viewer.single {
-  grid-template-columns: 1fr;
-}
-
-/* 分割ONのときは2列 */
-.viewer.split {
   grid-template-columns: 1fr 1fr;
+  gap: 14px;
 }
 
 .panel {
@@ -137,9 +128,9 @@ canvas {
   background: #fff;
 }
 
-/* スマホでは縦並び */
+/* 狭い画面では縦並び */
 @media (max-width: 900px) {
-  .viewer.split {
+  .viewer {
     grid-template-columns: 1fr;
   }
 }
