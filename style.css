@@ -123,11 +123,36 @@ input[type="number"] {
   background: #fff;
 }
 
-/* 状態表示 */
+/* 拡大縮小グループ */
+.zoom-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 4px;
+}
+
+.zoom-group button {
+  min-width: 48px;
+  height: 40px;
+  font-size: 22px;
+  padding: 0 10px;
+}
+
+.zoom-label {
+  min-width: 56px;
+  text-align: center;
+  font-size: 15px;
+  color: #333;
+  display: inline-block;
+}
+
+/* 状態表示
+   ここを小さめにした */
 .status {
   margin: 2px 8px 0 8px;
-  padding: 4px 8px;
-  font-size: 16px;
+  padding: 3px 8px;
+  font-size: 12px;
+  line-height: 1.2;
   color: #333;
   background: #fff;
   display: inline-block;
@@ -149,17 +174,12 @@ input[type="number"] {
 /* =========================
    PDF表示領域
    ========================= */
-
-/* 上部固定分だけ余白をあける
-   値はJSで実測して反映してもよいが、
-   今回は安定しやすいよう calc を使わず script 側でも補正する */
 .viewer-wrap {
   height: 100vh;
   overflow: auto;
   padding: 150px 12px 12px 12px;
 }
 
-/* 常に2画面 */
 .viewer {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -167,7 +187,6 @@ input[type="number"] {
   align-items: start;
 }
 
-/* 各PDF枠 */
 .panel {
   background: #fff;
   border: 1px solid #cfcfcf;
@@ -176,14 +195,12 @@ input[type="number"] {
   overflow: auto;
 }
 
-/* タイトル */
 .panel-title {
   margin-bottom: 8px;
   font-size: 18px;
   font-weight: bold;
 }
 
-/* PDF描画先 */
 canvas {
   display: block;
   width: 100%;
@@ -192,7 +209,6 @@ canvas {
   background: #fff;
 }
 
-/* 狭い画面では縦並び */
 @media (max-width: 900px) {
   .viewer {
     grid-template-columns: 1fr;
